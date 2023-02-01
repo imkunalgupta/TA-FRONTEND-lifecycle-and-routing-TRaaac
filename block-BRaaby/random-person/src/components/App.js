@@ -1,74 +1,127 @@
 import React from 'react';
+import Card from './Card';
 import Loader from './Loader';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faUser,
-  faEnvelope,
-  faCalendar,
-  faMap,
-  faPhone,
-  faLock,
-} from '@fortawesome/fontawesome-free-solid';
-
-class Data extends React.Component {
+class App extends React.Component {
   constructor(props) {
+    console.log('App constructor');
+
     super(props);
     this.state = {
-      users: [],
-      isLoading: true,
+      data: null,
+      new: false,
+      valuetoDisplay: 'mail',
+      valueTitle: '',
+      value: '',
     };
   }
+
   componentDidMount() {
-    fetch('https://randomuser.me/api/?results=5')
-      .then((res) =>
-        res.data.results.map((user) => ({
-          name: `${user.name.first} ${user.name.last}`,
-          email: `${user.email}`,
-          image: `${user.picture.middle}`,
-          dob: `${user.dob.date}`,
-          location: `${user.location.city}, ${user.location.state}, ${user.location.country}`,
-          phone: `${user.phone}`,
-          username: `${user.login.username}`,
-        }))
-      )
-      .then((users) => this.setState({ users, isLoading: false }));
+    console.log('App onmount');
+    fetch('https://randomuser.me/api/')
+      .then((res) => res.json())
+      .then((data) => {
+        this.setState({
+          data: data.results[0],
+          valuetoDisplay: '',
+          valueTitle: '',
+          value: '',
+        });
+      });
   }
+
+  getRandomeUser = (event) => {
+    fetch('https://randomuser.me/api/')
+      .then((res) => res.json())
+      .then((data) => {
+        this.setState({ data: data.results[0] });
+      });
+  };
+
+  handleChangeData = (event, content) => {
+    console.log('icon clicked');
+    console.log(this.state.data);
+    switch (content) {
+      case 'user':
+        this.setState({
+          valueTitle: 'my Name Is',
+          value: this.state.data.name.first,
+        });
+        break;
+      case 'mail':
+        this.setState({
+          valueTitle: 'Email Address',
+          value: this.state.data.email,
+        });
+        break;
+
+      case 'dob':
+        this.setState({
+          valueTitle: 'Age is',
+          value: this.state.data.dob.age,
+        });
+        break;
+
+      case 'address':
+        this.setState({
+          valueTitle: 'Address is',
+          value:
+            this.state.data.location.street.number +
+            ', ' +
+            this.state.data.location.street.name +
+            ', ' +
+            this.state.data.location.city +
+            ', ' +
+            this.state.data.location.country,
+        });
+        break;
+
+      case 'phone':
+        this.setState({
+          valueTitle: 'Phone No. is',
+          value: this.state.data.phone,
+        });
+        break;
+
+      case 'password':
+        this.setState({
+          valueTitle: 'Password is',
+          value: this.state.data.login.password,
+        });
+        break;
+
+      default:
+        break;
+    }
+    this.setState({ valueToDisplay: content });
+  };
+
   render() {
-    const { isLoading, users } = this.state;
+    console.log('App render');
     return (
-      <>
-        <div className="container">
-          {!isLoading ? (
-            users.map((user) => {
-              const { name, email, image, dob, location, phone, username } =
-                user;
-              return (
-                <div className="box">
-                  <img src={image} alt="profile" />
-                  <p>My name is</p>
-                  <h3>{name}</h3>
-                  <div className="flex">
-                    <FontAwesomeIcon className="icon" icon={faUser} />
-                    <FontAwesomeIcon className="icon" icon={faEnvelope} />
-                    <FontAwesomeIcon className="icon" icon={faCalendar} />
-                    <FontAwesomeIcon className="icon" icon={faMap} />
-                    <FontAwesomeIcon className="icon" icon={faPhone} />
-                    <FontAwesomeIcon className="icon" icon={faLock} />
-                  </div>
-                  <button>
-                    {!this.state.data ? 'Random User' : 'Loading...'}
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <Loader />
-          )}
-        </div>
-      </>
+      <div className="main-div">
+        <header></header>
+        <main>
+          <section className="card-sec">
+            {!this.state.data ? (
+              <h1>Loading</h1>
+            ) : (
+              <Card
+                data={this.state.data}
+                valuetoDisplay={this.state.valuetoDisplay}
+                valueTitle={this.state.valueTitle}
+                value={this.state.value}
+                getRandomeUser={this.getRandomeUser}
+                handleChangeData={this.handleChangeData}
+              />
+            )}
+          </section>
+        </main>
+        <Loader />
+      </div>
     );
   }
 }
 
-export default Data;
+//Card component
+
+export default App;
